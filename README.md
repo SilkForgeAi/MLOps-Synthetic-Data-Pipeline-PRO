@@ -305,6 +305,89 @@ summary = analytics.get_summary()
 analytics.export_report("report.json")
 ```
 
+### 🔄 Composable Pipelines
+Build complex data generation workflows:
+```python
+from pydantic_agent_factory import DataPipeline, MultiDomainPipeline
+
+generator = DataGenerator()
+pipeline = (DataPipeline(generator)
+           .add_config(config)
+           .filter_by_quality(min_score=0.8)
+           .filter_by_domain(["technical", "medical"]))
+
+stats = await pipeline.execute_async("output.jsonl")
+```
+
+### 📝 Logging & Monitoring
+Track generation with comprehensive logging:
+```python
+from pydantic_agent_factory import setup_logging, MetricsCollector
+
+logger = setup_logging(log_file="generation.log")
+metrics = MetricsCollector()
+
+# Generation code...
+summary = metrics.get_summary()
+```
+
+### 📦 Batch Processing
+Process large-scale datasets efficiently:
+```python
+from pydantic_agent_factory import BatchProcessor, DataGenerator, DatasetConfig
+
+generator = DataGenerator()
+processor = BatchProcessor(generator, batch_size=100)
+
+config = DatasetConfig(dataset_type="instruction", num_examples=1000)
+stats = await processor.process_batch_async(config, "output.jsonl")
+```
+
+### 🔄 Data Augmentation
+Augment and sample training data:
+```python
+from pydantic_agent_factory import (
+    ParaphraseAugmenter,
+    QualityWeightedSampler,
+    DiversitySampler
+)
+
+# Augment examples
+augmenter = ParaphraseAugmenter(generator, num_variations=2)
+augmented = await augmenter.augment_async(example)
+
+# Sample with quality weighting
+sampler = QualityWeightedSampler()
+sampled = sampler.sample(examples, n=100)
+```
+
+### ⚙️ Factory Configuration
+Top-level configuration for the entire factory:
+```python
+from pydantic_agent_factory import DataFactoryConfig, DataGenerator
+
+# Create factory config
+factory_config = DataFactoryConfig(
+    model="gpt-4o-mini",
+    max_concurrent=20,
+    default_min_quality=0.75,
+    log_level="INFO"
+)
+
+# Initialize generator from config
+generator = DataGenerator(**factory_config.to_generator_kwargs())
+```
+
+### 🛠️ Utilities
+Common utilities for data processing:
+```python
+from pydantic_agent_factory import utils
+
+tokens = utils.count_tokens(text)
+cost = utils.estimate_cost(tokens, model="gpt-4o-mini")
+domain = utils.extract_domain_from_text(text)
+```
+
 ## Advanced Usage
 
 ### Custom Models and Providers
@@ -402,11 +485,25 @@ Each line in the JSONL file is a JSON object with this structure:
 
 ```
 pydantic_agent_factory/
+├── __init__.py        # Package exports
+├── __main__.py        # CLI entry point (python -m pydantic_agent_factory)
 ├── models.py          # Pydantic schemas for all data types
-├── generator.py       # Agent-based data generation
-├── writer.py          # JSONL writing and validation
+├── generator.py       # Agent-based async data generation
+├── writer.py          # JSONL writing, validation, and export formats
 ├── cli.py             # Command-line interface
-└── __init__.py        # Package exports
+├── pipelines.py       # Composable data generation workflows
+├── templates.py       # Template system for domain-specific prompts
+├── config_loader.py   # YAML/JSON configuration file support
+├── analytics.py        # Dataset analytics and statistics
+├── logging.py         # Logging and monitoring
+└── utils.py           # Utility functions (token counting, text processing, etc.)
+
+examples/
+├── basic_usage.py     # Basic usage examples
+├── example_pipeline.py # Pipeline workflow examples
+├── example_logging.py  # Logging and metrics examples
+├── config_example.yaml # Example configuration file
+└── template_example.yaml # Example template file
 ```
 
 ## Requirements
