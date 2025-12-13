@@ -583,7 +583,7 @@ examples/
 
 ## 💰 Pricing & Acquisition
 
-**Current Sale Price: $10,000** | **Valued at: $35,000**
+**Current Sale Price: $15,000** | **Valued at: $35,000**
 
 This production-ready LLM data pipeline is available for immediate acquisition at a significant discount. 
 
