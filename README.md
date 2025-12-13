@@ -62,6 +62,11 @@ min_quality_score: 0.75
 
 Generate:
 ```bash
+python -m pydantic_agent_factory generate --config config.yaml --output dataset.jsonl
+```
+
+Or using the direct CLI:
+```bash
 python -m pydantic_agent_factory.cli generate --config config.yaml --output dataset.jsonl
 ```
 
@@ -376,6 +381,68 @@ factory_config = DataFactoryConfig(
 
 # Initialize generator from config
 generator = DataGenerator(**factory_config.to_generator_kwargs())
+```
+
+### 📊 Experiment Tracking (MLflow/WandB)
+Track experiments with MLflow or WandB:
+```python
+from pydantic_agent_factory import MLflowTracker, WandBTracker, TrackingPipeline, DataPipeline
+
+# MLflow tracking
+mlflow_tracker = MLflowTracker(experiment_name="llm_data_generation")
+tracking_pipeline = TrackingPipeline(pipeline, mlflow_tracker)
+stats = await tracking_pipeline.execute_with_tracking_async("output.jsonl")
+
+# WandB tracking
+wandb_tracker = WandBTracker(project_name="llm-data-factory")
+tracking_pipeline = TrackingPipeline(pipeline, wandb_tracker)
+stats = await tracking_pipeline.execute_with_tracking_async("output.jsonl")
+```
+
+### 🌐 Distributed Generation (Ray/Dask)
+Scale to 100K+ examples with distributed processing:
+```python
+from pydantic_agent_factory import RayGenerator, DaskGenerator, DatasetConfig
+
+# Using Ray
+ray_gen = RayGenerator(num_cpus=8)
+config = DatasetConfig(dataset_type="instruction", num_examples=10000)
+examples = ray_gen.generate(config, num_workers=8, chunks_per_worker=125)
+
+# Using Dask
+dask_gen = DaskGenerator(n_workers=8)
+examples = dask_gen.generate(config, num_workers=8, chunks_per_worker=125)
+```
+
+### 🔄 Streaming Generation
+Continuous data pipelines with streaming:
+```python
+from pydantic_agent_factory import StreamingGenerator, ContinuousPipeline
+
+# Stream examples as they're generated
+streaming = StreamingGenerator(generator)
+async for example in streaming.stream_examples_async(config):
+    process_example(example)
+
+# Continuous pipeline
+continuous = ContinuousPipeline(generator, "output.jsonl")
+async for example in continuous.run_continuous_async(config, max_examples=1000):
+    # Process in real-time
+    pass
+```
+
+### 🔍 Deduplication & Quality Filters
+Built-in deduplication and quality filtering in pipelines:
+```python
+from pydantic_agent_factory import DataPipeline
+
+pipeline = (DataPipeline(generator)
+           .add_config(config)
+           .filter_by_quality(min_score=0.8)  # Quality filter
+           .filter_duplicates(similarity_threshold=0.9)  # Deduplication
+           .filter_by_domain(["technical", "medical"]))
+
+stats = await pipeline.execute_async("output.jsonl")
 ```
 
 ### 🛠️ Utilities
